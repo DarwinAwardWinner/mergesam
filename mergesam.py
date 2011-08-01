@@ -119,6 +119,23 @@ def is_fasta(filename):
     except Exception, e:
         return False
 
+def is_fai(filename):
+    assert os.path.exists(filename)
+    firstline = next(open(filename, 'r'))
+    fields = firstline.split("\t")
+    if len(fields) != 5:
+        logging.debug("Not fai: %s (%s)", filename, "Should have 5 tab-separated fields")
+        return False
+    for f in fields[1:]:
+        try:
+            int(f)
+        except ValueError:
+            logging.debug("Not fai: %s (%s)", filename, "Fields 2 through 5 should be integers")
+            return False
+    else:
+        logging.debug("Looks like fai: %s", filename)
+        return True
+
 read_devnull = open(os.devnull, "r")
 write_devnull = open(os.devnull, "w")
 
@@ -177,13 +194,15 @@ returned directly."""
                     index_fasta(tempfilename)
                     return fai_filename
         # Non-fasta file is assumed to be fai file.
-        else:
-            logging.debug("Assuming fai file at %s", filename)
+        elif is_fai(filename):
+            logging.debug("Found fai file at %s", filename)
             return filename
+        else:
+            raise ValueError("Not a fai or fasta file: %s" % filename)
     else:
         # File is nonexistent, so check if the fai file exists anyway.
         fai_filename = filename + ".fai"
-        if os.path.exists(fai_filename):
+        if os.path.exists(fai_filename) and is_fai(fai_filename):
             logging.debug("Found existing fai file at %s", fai_filename)
             return fai_filename
         else:
