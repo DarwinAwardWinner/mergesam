@@ -113,6 +113,7 @@ its contents are registered for automatic deletion upon program exit."""
 def is_fasta(filename):
     assert os.path.exists(filename)
     try:
+        next(SeqIO.parse(filename, 'fasta'))
         return True
     except Exception, e:
         return False
