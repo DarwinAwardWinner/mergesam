@@ -217,7 +217,7 @@ returned directly."""
             logging.debug("Found fai file at %s", filename)
             return filename
         else:
-            raise ValueError("Not a fai or fasta file: %s" % filename)
+            error(ValueError("Specified reference is not a fai or fasta file: %s" % filename))
     else:
         # File is nonexistent, so check if the fai file exists anyway.
         fai_filename = filename + ".fai"
@@ -225,7 +225,7 @@ returned directly."""
             logging.debug("Found existing fai file at %s", fai_filename)
             return fai_filename
         else:
-            raise IOError("Could not get fai for nonexistent file: %s" % filename)
+            error(IOError("Could not get fai index for nonexistent file: %s" % filename))
 
 def is_bam(filename, samtools="samtools"):
     """Returns True if filename represents a bam file."""
@@ -359,7 +359,7 @@ file. Various options can produce other outputs."""
     elif not sam:
         needref = need_reference(samfiles)
         if needref:
-            raise Exception("A reference index is required because the first input file has no header.")
+            error(Exception("A reference index is required because the first input file has no header."))
         elif needref is None:
             logging.warn("A reference index may be required for proper operation.")
     # Handle all interactions between flags
