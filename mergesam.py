@@ -49,7 +49,7 @@ read from the 'stdout' property."""
 
     def __init__(self, command_list, input, suppress_stderr=True):
         assert len(command_list) >= 1
-        logging.debug(command_list)
+        logging.debug("Creating pipeline with commands: %s", command_list)
         if suppress_stderr:
             error_handle = open(os.devnull, "w")
         else:
@@ -107,7 +107,7 @@ def TemporaryDirectory(*args, **kwargs):
 This is identical to tempfile.mkdtemp, except that the directory and
 its contents are registered for automatic deletion upon program exit."""
     path = tempfile.mkdtemp(*args, **kwargs)
-    logging.info("Created temp dir: %s", path)
+    logging.debug("Created temp dir: %s", path)
     atexit.register(lambda(x): shutil.rmtree(x), path)
     return path
 
@@ -115,8 +115,9 @@ def is_fasta(filename):
     assert os.path.exists(filename)
     try:
         next(SeqIO.parse(filename, 'fasta'))
+        logging.debug("Looks like fasta: %s (%s)", filename, "Successfuly read one fasta record")
         return True
-    except Exception, e:
+    except:
         return False
 
 def is_fai(filename):
@@ -359,7 +360,7 @@ file. Various options can produce other outputs."""
         # Compress should be False if sort is True, because
         # "samtools sort" will do the compression.
         compress = not sort and not uncompressed
-    logging.info("Input files: %s", samfiles)
+    logging.info("Input files: %s", list(samfiles))
     sam_input = merge_sam(filenames=samfiles, header=header, samtools=samtoolspath, ref=ref)
     if outfile == '-':
         output = sys.stdout
