@@ -135,15 +135,6 @@ stderr are not available (stderr is discarded)."""
     return Popen(stdout=PIPE, stderr=write_devnull,
                             *args, **kwargs).stdout
 
-def command_pipe(command, stdin):
-    """Pipe input through command to produce output.
-
-Unlike the stdin arg to Popen, input can be any iterable, not just a
-file handle."""
-    proc = Popen(command, stdin=PIPE, stdout=PIPE, stderr=write_devnull)
-    fork_and_pump(stdin, proc.stdin)
-    return proc.stdout
-
 def index_fasta(filename, samtools="samtools", *args, **kwargs):
     """Create a fasta index."""
     logging.info("Creating fasta index for %s", filename)
