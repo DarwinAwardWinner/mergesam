@@ -44,8 +44,18 @@ error somewhere else in the program."""
 class CommandPipeline(object):
     """A class that sets up a pipeline of commands.
 
-Input is read from a filehandle or iterable object, and output can be
-read from the 'stdout' property."""
+The constructor takes a list of commands, and an input source. Each
+command should be a list of strings, so the command list is a list of
+lists of strings. The input source can be anything that
+subprocess.Popen will accept as the 'stdin' argument. Additionally,
+the input may be any iterable, which will be assumed to yields lines
+of input for the pipeline to consume. This iterable will be consumed
+in a separate thread (by forking) in order to prevent deadlocks.
+
+The commands in the list are started, and each command's standard
+output is attached to the standard input of the succeeding command.
+The standard output of the final command in the pipeline is available
+from the 'stdout' property."""
 
     def __init__(self, command_list, input, suppress_stderr=True):
         assert len(command_list) >= 1
@@ -81,6 +91,7 @@ read from the 'stdout' property."""
             proc.wait()
 
     def poll(self):
+        """See subprocess.Popen.poll"""
         for proc in self.procs:
             proc.poll()
 
