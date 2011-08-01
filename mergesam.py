@@ -101,8 +101,8 @@ read from the 'stdout' property."""
         """Return true if every process finished."""
         return all(rc is not None for rc in self.returncodes())
 
-def TemporaryDirectory(*args, **kwargs):
-    """A temporary directory with automatic cleanup.
+def mktempdir(*args, **kwargs):
+    """Create a temporary directory with automatic cleanup.
 
 This is identical to tempfile.mkdtemp, except that the directory and
 its contents are registered for automatic deletion upon program exit."""
@@ -153,7 +153,7 @@ stderr are not available (stderr is discarded)."""
     return Popen(stdout=PIPE, stderr=write_devnull,
                             *args, **kwargs).stdout
 
-def index_fasta(filename, samtools="samtools", *args, **kwargs):
+def create_fasta_index(filename, samtools="samtools", *args, **kwargs):
     """Create a fasta index."""
     logging.info("Creating fasta index for %s", filename)
     check_call_silent([samtools, "faidx", filename])
@@ -182,17 +182,17 @@ returned directly."""
                     if os.path.exists(fai_filename):
                         raise Exception("Index exists but is unreadable")
                     logging.debug("Creating new fai file at %s", fai_filename)
-                    index_fasta(filename)
+                    create_fasta_index(filename)
                     return fai_filename
                 # Try to create fai file in temporary directory where we
                 # have write permission.
                 except:
-                    tempdir = TemporaryDirectory()
+                    tempdir = mktempdir()
                     tempfilename = os.path.join(tempdir, os.path.basename(filename))
                     fai_filename = tempfilename + ".fai"
                     logging.debug("Creating new temp fai file at %s" + fai_filename)
                     os.symlink(os.path.abspath(filename), tempfilename)
-                    index_fasta(tempfilename)
+                    create_fasta_index(tempfilename)
                     return fai_filename
         # Non-fasta file is assumed to be fai file.
         elif is_fai(filename):
@@ -276,7 +276,7 @@ def sort_bam_command(byname=False, mem=None, samtools="samtools"):
     logging.debug("Sort bam command: %s", command)
     return command
 
-def index_bam_file(filename, samtools="samtools"):
+def create_bam_index(filename, samtools="samtools"):
     assert os.path.exists(filename)
     check_call_silent([samtools, "index", filename])
 
@@ -389,7 +389,7 @@ file. Various options can produce other outputs."""
     logging.info("Finished creating output file %s", outfile)
     if index:
         logging.info("Indexing %s", outfile)
-        index_bam_file(outfile, samtools=samtoolspath)
+        create_bam_index(outfile, samtools=samtoolspath)
     logging.info("Done")
 
 # Entry point
