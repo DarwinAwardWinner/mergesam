@@ -156,12 +156,13 @@ def check_call_silent(*args, **kwargs):
     return check_call(stdin=read_devnull, stdout=write_devnull, stderr=write_devnull,
                                  *args, **kwargs)
 
-def read_stdout_from_command(*args, **kwargs):
+def read_stdout_from_command(command, *args, **kwargs):
     """Run a command and return an iterator over its standard output.
 
 Arguments are identical to subprocess.Popen except that stdout and
 stderr are not available (stderr is discarded)."""
-    return Popen(stdout=PIPE, stderr=write_devnull,
+    logging.debug("Reading from command: %s", list(command))
+    return Popen(command, stdout=PIPE, stderr=write_devnull,
                             *args, **kwargs).stdout
 
 def create_fasta_index(filename, samtools="samtools", *args, **kwargs):
