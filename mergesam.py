@@ -298,18 +298,18 @@ with no header, and False otherwise."""
 @plac.annotations(
     # arg=(helptext, kind, abbrev, type, choices, metavar)
     # Flags
-    nosort=("Do not sort or index bam output.", "flag", "s"),
+    nosort=("Disable automatic sorting of bam output.", "flag", "s"),
     sortbyname=("Sort bam by name", "flag", "n"),
-    noindex=("Do not index bam output file.", "flag", "i"),
+    noindex=("Disable automatic indexing of bam output files.", "flag", "i"),
     uncompressed=("Do not compress bam output.", "flag", "u"),
     sam=("Output in sam format instead of bam.", "flag", "S"),
-    noheader=("Do not output sam header.", "flag", "d"),
+    noheader=("Do not output the header for sam output.", "flag", "d"),
     # Default
-    ref=("Reference. This can be a fasta file or a fai file. An unindexed fasta file will be indexed automatically. This option is only required ", "option", "r"),
-    samtoolspath=("Path to samtools.", "option"),
+    ref=("Reference. This can be a fasta file or a fai file. An unindexed fasta file will be indexed automatically. This option is only required if some input files are sam files with no @SQ headers.", "option", "r", None, None, 'REFERENCE.fa[.fai]'),
+    samtoolspath=("Path to samtools. Only required if samtools is not in your $PATH", "option", "t", None, None, 'PATH'),
     sortmem=("Maximum memory for bam sorting (see samtools manpage).", "option", "m", int),
-    outfile=("Output file name. Default is to write to standard output.", "option", "o", None, None, "FILE"),
-    samfiles=("Input files to read and merge. Default is to read from standard input. Both sam and bam files can be supplied as inputs.", "positional"),
+    outfile=("Output file name. Default is to write to standard output. When writing bam output to a file, that file will be automatically indexed.", "option", "o", None, None, "FILE"),
+    samfiles=("Input files to read and merge. Default is to read from standard input. Both sam and bam files can be supplied as inputs.", "positional", None, None, None, 'SAMFILE'),
     )
 def main(nosort, sortbyname, noindex, uncompressed, # BAM options
          sam, noheader,                             # SAM options
