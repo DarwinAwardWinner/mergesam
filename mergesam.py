@@ -13,6 +13,14 @@ from Bio import SeqIO
 from itertools import *
 from warnings import warn
 
+def error(*args, **kwargs):
+    """Log an error and exit.
+
+This is for 'external' or 'user' errors, where no stack trace should
+be printed."""
+    logging.error(*args, **kwargs)
+    exit(1)
+
 def fork_and_pump(input, handle):
     """Send input to handle in a child process.
 
@@ -316,7 +324,8 @@ with no header, and False otherwise."""
     noheader=("Do not output the header for sam output.", "flag", "d"),
     quiet=("Do not print informational messages.", "flag", "q"),
     verbose=("Print debug messages that are probably only useful if something is going wrong.", "flag", "v"),
-    # Default
+    force_bam_tty=("Force bam output to stdout, even it it looks like a terminal.", "flag", "f"),
+    # Options with defaults
     ref=("Reference. This can be a fasta file or a fai file. An unindexed fasta file will be indexed automatically. This option is only required if some input files are sam files with no @SQ headers.", "option", "r", None, None, 'REFERENCE.fa[.fai]'),
     samtoolspath=("Path to samtools. Only required if samtools is not in your $PATH", "option", "t", None, None, 'PATH'),
     sortmem=("Maximum memory for bam sorting (see samtools manpage).", "option", "m", int),
@@ -325,7 +334,7 @@ with no header, and False otherwise."""
     )
 def main(nosort, sortbyname, noindex, uncompressed, # BAM options
          sam, noheader,                             # SAM options
-         quiet, verbose,                            # Other flags
+         quiet, verbose, force_bam_tty,             # Other flags
          ref=None, samtoolspath="samtools",         # External dependencies
          sortmem=500000000,                         # samtools sort option
          outfile="-", *samfiles):                   # I/O specification
@@ -382,6 +391,8 @@ file. Various options can produce other outputs."""
     logging.info("Input files: %s", list(samfiles))
     sam_input = merge_sam(filenames=samfiles, header=header, samtools=samtoolspath, ref=ref)
     if outfile == '-':
+        if not sam and not force_bam_tty and sys.stdout.isatty():
+            error(Exception("Will not write BAM data to terminal. Either specify an output file, redirect stdout, or use --force_bam_tty to override."))
         output = sys.stdout
         # Cannot index standard output
         index = False
