@@ -62,7 +62,8 @@ read from the 'stdout' property."""
             first_proc = Popen(first_command, stdin=input, stdout=PIPE, stderr=error_handle)
         except AttributeError:
             first_proc = Popen(first_command, stdin=PIPE, stdout=PIPE, stderr=error_handle)
-            fork_and_pump(input, first_proc.stdin)
+            input_iterator = iter(input)
+            fork_and_pump(input_iterator, first_proc.stdin)
         # Append the rest of the commands to the pipeline, chaining
         # inputs to outputs
         self.procs = [first_proc]
