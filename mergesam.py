@@ -13,8 +13,6 @@ from Bio import SeqIO
 from itertools import *
 from warnings import warn
 
-logging.basicConfig(level=logging.INFO)
-
 def fork_and_pump(input, handle):
     """Send input to handle in a child process.
 
@@ -316,6 +314,8 @@ with no header, and False otherwise."""
     uncompressed=("Do not compress bam output.", "flag", "u"),
     sam=("Output in sam format instead of bam.", "flag", "S"),
     noheader=("Do not output the header for sam output.", "flag", "d"),
+    quiet=("Do not print informational messages.", "flag", "q"),
+    verbose=("Print debug messages that are probably only useful if something is going wrong.", "flag", "v"),
     # Default
     ref=("Reference. This can be a fasta file or a fai file. An unindexed fasta file will be indexed automatically. This option is only required if some input files are sam files with no @SQ headers.", "option", "r", None, None, 'REFERENCE.fa[.fai]'),
     samtoolspath=("Path to samtools. Only required if samtools is not in your $PATH", "option", "t", None, None, 'PATH'),
@@ -325,6 +325,7 @@ with no header, and False otherwise."""
     )
 def main(nosort, sortbyname, noindex, uncompressed, # BAM options
          sam, noheader,                             # SAM options
+         quiet, verbose,                            # Other flags
          ref=None, samtoolspath="samtools",         # External dependencies
          sortmem=500000000,                         # samtools sort option
          outfile="-", *samfiles):                   # I/O specification
@@ -333,7 +334,13 @@ def main(nosort, sortbyname, noindex, uncompressed, # BAM options
 The primary purpose of this script is to take any number of sam or bam
 files and merge them into one sorted, compressed, and indexed bam
 file. Various options can produce other outputs."""
-    # Read stdin by default
+    if quiet:
+        logging.basicConfig(level=logging.WARN)
+    elif verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+    # If no input is specified, read standard input.
     if not samfiles:
         samfiles = ["-"]
     # Ensure that ref points to the fai file
