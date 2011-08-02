@@ -1,0 +1,118 @@
+# mergesam: Automate common sam & bam conversions
+
+Mergesam is a a tool to save you some time when interconverting sam
+and bam formats. When was the last time you sorted a bam file and
+*didn't* immediately index it afterward? For that matter, when was the
+last time you didn't sort a bam file? Mergesam aims to have sensible
+defaults and flexible options, in order to streamline your path from
+sam to read-to-use bam and back.
+
+## Default: merge, sort, and index.
+
+A common pattern that I have encountered when manipulating sam and bam
+files is to merge several such files into one bam file, then sort that
+bam file, then index it. With the mergesam script, this becomes a
+single simple command:
+
+    mergesam.py -o output.bam input1.sam input2.sam input3.sam
+
+The result is that `output.bam` is a *sorted* bam file, with an
+accompanying index file `output.bam.bai`. An equivalent series of
+shell commands is:
+
+    samtools view -h input1.sam > temp.sam
+    samtools view input2.sam >> temp.sam
+    samtools view input3.sam >> temp.sam
+    samtools view -ubS temp.sam > temp.bam
+    samtools sort temp.bam output
+    samtools index output.bam
+    rm temp.sam temp.bam
+
+One could also implement it as a single pipeline, with no intermediate
+files:
+
+    {
+        samtools view -h input1.sam
+        samtools view input2.sam
+        samtools view input3.sam
+    } | samtools view -ubS | samtools sort - output
+    samtools index output.bam
+
+If you find yourself frequently writing code like the above while
+manipulating sam and bam files, you might want to use mergesam
+instead.
+
+## Fully pipe compliant
+
+Mergesam will happily read from standard input and write to standard
+output. In fact, this is the default:
+
+    cat input.sam | mergesam.py > output.bam
+
+You can also specify standard input and output explicitly:
+
+    cat input.sam | mergesam.py -o - - > output.bam
+
+Unfortunately, when writing to standard output, it is impossible to
+index the resulting file, since mergesam does not know where the
+output file is (or even if one exists). So if you want indexing, use
+the `-o` option with a filename, not a dash.
+
+By the way, mergesam will never send binary (bam) output directly to
+your terminal unless you ask it to, using the `--force_bam_tty`
+option. Binary data will only be sent to standard output if it has
+been redirected or piped into another command, so don't worry about
+clobbering your terminal by accident.
+
+## Variations: unsorted, unindexed, uncompressed
+
+Since you usually want your bam files to be sorted and indexed,
+sorting and indexing are both enabled by default. If you don't want
+either, you can use the `--nosort` or `--noindex` flags (Note that
+using both is redundant, since sorting is a prerequisite for
+indexing.) There is also the `--sortbyname` flag, which corrseponds to
+`samtools sort -n` -- sorting by read name instead of reference
+coordinate. Lastly, you can output uncompressed bam with the
+`--uncompressed` option (but note that sorted bam output is always
+compressed).
+
+## Input format is detected automatically
+
+If the input files are already bam files, the command is the same.
+Input file types are automatically detected:
+
+    mergesam.py -o output.bam input1.bam input2.bam input3.bam
+
+In fact, even if `input.bam` was actually a *sam* file, the above
+command would still work. It looks at the contents of the file to
+figure out what format it is. The one exception to this rule is that
+*standard input is always sam format*, since one cannot detect the
+format of an input stream without losing some of the input in the
+process. If you need to pipe bam data into mergesam, you'll need to
+pass it through `samtools view -h`.
+
+    bam_producer_command | samtools view -h | mergesam.py -o output.bam
+
+## Specifying a reference
+
+If the sam files have no headers, you'll need a reference:
+
+    mergesam.py -o output.bam input.bam -r reference.fa.fai
+
+You can also supply the name of a fasta file, in which case the fasta
+index will automatically be created and used.
+
+    mergesam.py -o output.bam input.bam -r reference.fa
+
+If you don't have permission to create the index file in the same
+directory as the fasta file, the index will be created in a temporary
+directory and deleted when the program is finished.
+
+## SAM output
+
+To output sam instead of bam, just use the `--sam` flag:
+
+    mergesam.py --sam -o output.sam input.bam -r reference.fa
+
+Note that sam output is neither sorted nor indexed. By default, the
+sam output includes the header. To suppress it, use `--noheader`.
