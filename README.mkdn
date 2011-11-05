@@ -5,7 +5,7 @@ and bam formats. When was the last time you sorted a bam file and
 *didn't* immediately index it afterward? For that matter, when was the
 last time you didn't sort a bam file? Mergesam aims to have sensible
 defaults and flexible options, in order to streamline your path from
-sam to read-to-use bam and back.
+sam to ready-to-use bam and back.
 
 ## Default: merge, sort, and index.
 
