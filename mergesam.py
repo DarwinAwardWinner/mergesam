@@ -330,7 +330,7 @@ with no header, and False otherwise."""
     samtoolspath=("Path to samtools. Only required if samtools is not in your $PATH", "option", "t", None, None, 'PATH'),
     sortmem=("Maximum memory for bam sorting (see samtools manpage).", "option", "m", int),
     outfile=("Output file name. Default is to write to standard output. When writing bam output to a file, that file will be automatically indexed.", "option", "o", None, None, "FILE"),
-    samfiles=("Input files to read and merge. Default is to read from standard input. Both sam and bam files can be supplied as inputs.", "positional", None, None, None, 'SAMFILE'),
+    samfiles=("Input files to read and merge. Default is to read from standard input. Both sam and bam files can be supplied as inputs (but standard input is assumed to be sam).", "positional", None, None, None, 'SAMFILE'),
     )
 def main(nosort, sortbyname, noindex, uncompressed, # BAM options
          sam, noheader,                             # SAM options
