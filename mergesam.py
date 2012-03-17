@@ -408,7 +408,7 @@ file. Various options can produce other outputs."""
         if sort:
             logging.info("Sorting bam")
             command_list.append(sort_bam_command(samtools=samtoolspath, mem=sortmem))
-        pipeline = CommandPipeline(command_list, sam_input, suppress_stderr=True)
+        pipeline = CommandPipeline(command_list, sam_input, suppress_stderr=not verbose)
         logging.info("Writing bam to %s", outfile)
         output.writelines(pipeline.stdout)
         pipeline.close()
