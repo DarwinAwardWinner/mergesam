@@ -159,6 +159,7 @@ write_devnull = open(os.devnull, "w")
 
 def check_call_silent(*args, **kwargs):
     """subprocess.check_call with all handles set to /dev/null."""
+    logging.debug("Running command: %s; %s", repr(args), repr(kwargs))
     return check_call(stdin=read_devnull, stdout=write_devnull, stderr=write_devnull,
                                  *args, **kwargs)
 
